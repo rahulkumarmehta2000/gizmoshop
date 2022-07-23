@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import {Container} from 'react-bootstrap'
 import Header from './components/Header'
@@ -19,10 +20,28 @@ import ProductListScreen from './screens/ProductListScreen'
 import ProductEditScreen from './screens/ProductEditScreen'
 import OrderListScreen from './screens/OrderListScreen'
 import SearchBox from './components/SearchBox'
+
+import { PayPalScriptProvider } from '@paypal/react-paypal-js'
  
 const App = () => {
+
+  const [clientID, setClientID] = useState('')
+
+  useEffect(() => {
+    const getClientId = async () => {
+      const { data: clientId } = await axios.get('/api/config/paypal');
+ 
+      setClientID(clientId);
+    };
+ 
+    if (!window.paypal) {
+      getClientId();
+    }
+  }, [])
+
   return (
-    <BrowserRouter>
+    <>
+    {clientID && (<PayPalScriptProvider options={{ 'client-id': clientID }}> <BrowserRouter>
       <Header/>
       <main className='py-3'>
         <Container>
@@ -61,7 +80,8 @@ const App = () => {
         </Container>
       </main>
       <Footer/>
-    </BrowserRouter>
+    </BrowserRouter></PayPalScriptProvider>)}
+    </>
   );
 }
  
